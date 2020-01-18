@@ -12,14 +12,15 @@ const products = [
 /*
     map 
 */ 
+const curry = f => (a, ..._) => _.length ? f(a, ..._) : (..._) => f(a, ..._); 
 
-const map = (f, iter) => {
+const map = curry((f, iter) => {
     let res = []; 
     for(const a of iter){
         res.push(f(a)); 
     }
     return res; 
-}
+}); 
 
 console.log(map(
     p => p.name, products
@@ -29,13 +30,14 @@ console.log(map(
     filter 
 */ 
 
-const filter = (f, iter) => {
+const filter = curry((f, iter) => {
     let res = []; 
     for(const a of iter){
         if(f(a)) res.push(a); 
     }
     return res; 
-}
+}); 
+
 
 console.log(filter(
     p => p.price < 20000, products
@@ -56,7 +58,7 @@ for(const n of nums ){
 }
 console.log(total); 
 
-const reduce = (f,acc,iter) => {
+const reduce = curry((f,acc,iter) => {
     if(!iter){
         iter = acc[Symbol.iterator](); 
         acc = iter.next().value; 
@@ -66,7 +68,7 @@ const reduce = (f,acc,iter) => {
         acc = f(acc, a); 
     }
     return acc; 
-}; 
+}); 
 
 
 // Example 
@@ -105,7 +107,7 @@ console.log(reduce((total_price, product)=> {
 
 // 리스트에다가 함수들이 들어가는것 함수들을 하나씩 실행하는것 
 // ...args는 가변적인 매개변수가 올 수 있음을 말한다 
-const go = (...args) => reduce((a, f)=> f(a), args);  
+const go = (...args) => reduce((a, f) => f(a), args);  
 const pipe = (f,...fs) => (...as) => go(f(...as), ...fs); // 여기서 a 는 나중 인자를 말한다  
 // const pipe = (...fs) => (a) => go(a, ...fs); 원래 형태 
 // 여기서 첫함수를 꺼내서 실행을 하는것 
@@ -133,4 +135,20 @@ go(
     prices => console.log(prices)
 );  
 
+console.clear(); 
+console.log(reduce(add, 
+    map(p => p.price, 
+        filter(p => p.price < 20000, products)))); 
 
+
+const mult = curry((a,b) => a * b);
+console.log(mult(3)(2)); 
+
+// curry를 써서 간단하게 만든것 
+go(
+    products, 
+    filter(p => p.price < 20000), 
+    map(p => p.price), 
+    reduce(add),
+    console.log
+); 
